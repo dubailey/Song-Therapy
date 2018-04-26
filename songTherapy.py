@@ -1,6 +1,6 @@
 """
 This is the Song therapy skill. It recommends a song based on the emotion determined by an API
-of the user input.
+of the user input. Made by Duncan Bailey under his Dads account Barry Bailey
 """
 
 from __future__ import print_function
@@ -11,7 +11,7 @@ import random
 
 def get_emotion(words):
     url = "https://apis.paralleldots.com/v3/emotion"
-    payload = "text=" + words + "&api_key=XXXXXXXX&lang_code=en"
+    payload = "text=" + words + "&api_key=XXXXXX--GETYOUROWN---XXXXXX&lang_code=en"
     headers = {'Content-Type': 'application/x-www-form-urlencoded'}
     req = urllib2.Request(url, payload, headers)
     response = urllib2.urlopen(req)
@@ -30,8 +30,8 @@ def build_speechlet_response(title, output, reprompt_text, should_end_session):
         },
         'card': {
             'type': 'Simple',
-            'title': title,
-            'content': output
+            'title': 'Song Therapy',
+            'content': output if '<speak>' not in output else 'Your Song is playing. Stay groovy!'
         },
         'reprompt': {
             'outputSpeech': {
@@ -57,7 +57,7 @@ def get_welcome_response():
     """ If we wanted to initialize the session to have some attributes we could
     add those here
     """
-
+    
     session_attributes = {}
     card_title = "Welcome"
     speech_output = "Welcome to Song Therapy," \
@@ -91,7 +91,7 @@ def gets_mood_in_session(intent, session):
     """ Gets and sets the mood in the session and prepares the speech to reply to the
     user.
     """
-
+    
     card_title = 'Mood'
     session_attributes = {}
     should_end_session = False
@@ -99,25 +99,25 @@ def gets_mood_in_session(intent, session):
     if 'value' in intent['slots']['WORDS']:
         if session.get('attributes', {}) and "mood" in session.get('attributes', {}):
             #2nd call
-            words_to_get_mood = session['attributes']['mood'] + ' ' + intent['slots']['WORDS']['value'][3:]
-            mood = get_emotion(words_to_get_mood)
-            music = {
-                'Happy': ['https://s3-us-west-2.amazonaws.com/music-for-song-therapy/happy-music/happy2.mp3'],
-                'Sad': ['https://s3-us-west-2.amazonaws.com/music-for-song-therapy/sad-music/Darkness1.mp3',
-                'https://s3-us-west-2.amazonaws.com/music-for-song-therapy/sad-music/sad1.mp3',
-                'https://s3-us-west-2.amazonaws.com/music-for-song-therapy/sad-music/sad2.mp3'],
-                'Sarcasm': ['https://s3-us-west-2.amazonaws.com/music-for-song-therapy/sarcasm-music/sarcasm1.mp3',
-                'https://s3-us-west-2.amazonaws.com/music-for-song-therapy/sarcasm-music/sarcasm2.mp3'],
-                'Fear': ['https://s3-us-west-2.amazonaws.com/music-for-song-therapy/fear-music/fear1.mp3'],
-                'Excited': ['https://s3-us-west-2.amazonaws.com/music-for-song-therapy/excited-music/excited1.mp3',
-                'https://s3-us-west-2.amazonaws.com/music-for-song-therapy/excited-music/excited2.mp3'],
-                'Angry': ['https://s3-us-west-2.amazonaws.com/music-for-song-therapy/angry-music/angry1.mp3'],
-                'Bored': ['https://s3-us-west-2.amazonaws.com/music-for-song-therapy/bored-music/bored1.mp3',
-                'https://s3-us-west-2.amazonaws.com/music-for-song-therapy/bored-music/bored2.mp3']
-            }
-            output = "<speak> Okay, I've got it. " + "<audio src='"+ random.choice(music[mood]) + "' />  </speak>"
+            if intent['slots']['WORDS']['value'] in ['yes', 'YES', 'yeah', 'Yeah', 'ok', 'OK', 'Ok']:
+                output = "Ok, Talk to me."
+                should_end_session = False
+            else:
+                
+                words_to_get_mood = session['attributes']['mood'] + ' ' + intent['slots']['WORDS']['value']
+                mood = get_emotion(words_to_get_mood)
+                music = {
+                    'Happy': ['https://s3-us-west-2.amazonaws.com/song-therapy/Amazing+Grace+(PUBLIC+DOMAIN)+Bagpipes+played+by+Canadian+Soldiers.mp3'],
+                    'Sad': ['https://s3-us-west-2.amazonaws.com/song-therapy/Smooth+Jazz+Piano+Instrumental+-+Free+Music.mp3', 'https://s3-us-west-2.amazonaws.com/song-therapy/Cecil+Gant+-+I+wonder+(Public+Domain+Music).mp3'],
+                    'Sarcasm': ['https://s3-us-west-2.amazonaws.com/song-therapy/The+Black+Bear+Highland+Laddie.mp3', 'https://s3-us-west-2.amazonaws.com/song-therapy/The+Knights+of+the+Thistle+(Fanfare).mp3'],
+                    'Fear': ['https://s3-us-west-2.amazonaws.com/song-therapy/flight_of_the_bumblebee_2.mp3'],
+                    'Excited': ['https://s3-us-west-2.amazonaws.com/song-therapy/TakeMeOuttotheBallGame_edmeeker.mp3'],
+                    'Angry': ['https://s3-us-west-2.amazonaws.com/song-therapy/Back+Home+Again+in+Indiana.mp3'],
+                    'Bored': ['https://s3-us-west-2.amazonaws.com/song-therapy/Lin-Manuel+Miranda+Performs+at+the+White+House+Poetry+Jam_(8+of+8).mp3']
+                    }
+                output = "<speak> Okay, I've got it. " + "<audio src='"+ random.choice(music[mood]) + "' />  </speak>"
+                should_end_session = True
             reprompt_text = "Come again, please. "
-            should_end_session = True
         else:
             words_to_get_mood = intent['slots']['WORDS']['value']
             session_attributes = create_words_to_get_mood_attributes(words_to_get_mood)
